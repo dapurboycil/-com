@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dapur Boycil</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-icon">👩‍🍳</div><div><b id="storeNameSide">Dapur Boycil</b><small>Anda kenyang saya senang</small></div></div>
+    <nav>
+      <button class="nav-btn active" data-page="dashboard">🏠 Dashboard</button>
+      <button class="nav-btn" data-page="kasir">🧾 Kasir / Transaksi</button>
+      <button class="nav-btn" data-page="produk">📦 Data Stok & Barang</button>
+      <button class="nav-btn" data-page="pengeluaran">💸 Pengeluaran</button>
+      <button class="nav-btn" data-page="laporan">📊 Laporan</button>
+      <button class="nav-btn" data-page="struk">🖨️ Riwayat Struk</button>
+      <button class="nav-btn" data-page="pengaturan">⚙️ Pengaturan</button>
+    </nav>
+    <div class="sidebar-bottom">Versi 1.0<br><span>Data tersimpan di browser</span></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <button id="menuToggle" class="icon-btn">☰</button>
+        <span class="page-title" id="pageTitle">Dashboard</span>
+      </div>
+      <div class="top-actions"><span id="clock"></span><button class="profile">👤 Admin</button></div>
+    </header>
+
+    <section id="dashboard" class="page active">
+      <div class="page-head"><div><h1>Dashboard</h1><p>Ringkasan aktivitas toko hari ini.</p></div><button class="primary" onclick="showPage('kasir')">＋ Transaksi Baru</button></div>
+      <div class="cards">
+        <div class="card"><span>Penjualan Hari Ini</span><b id="dashSales">Rp 0</b><small id="dashTransactions">0 transaksi</small></div>
+        <div class="card"><span>Pengeluaran Hari Ini</span><b id="dashExpenses">Rp 0</b><small>Biaya operasional</small></div>
+        <div class="card"><span>Estimasi Laba</span><b id="dashProfit">Rp 0</b><small>Penjualan - pengeluaran</small></div>
+        <div class="card warning"><span>Stok Menipis</span><b id="dashLowStock">0</b><small>Barang perlu restock</small></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel"><div class="panel-head"><h3>Penjualan 7 Hari</h3></div><div id="salesChart" class="bar-chart"></div></div>
+        <div class="panel"><div class="panel-head"><h3>Stok Menipis</h3><button class="link" onclick="showPage('produk')">Lihat semua</button></div><div id="lowStockList"></div></div>
+      </div>
+      <div class="panel"><div class="panel-head"><h3>Transaksi Terbaru</h3><button class="link" onclick="showPage('struk')">Lihat riwayat</button></div><div class="table-wrap"><table><thead><tr><th>No. Struk</th><th>Tanggal</th><th>Pelanggan</th><th>Total</th><th>Status</th></tr></thead><tbody id="recentSales"></tbody></table></div></div>
+    </section>
+
+    <section id="kasir" class="page">
+      <div class="page-head"><div><h1>Kasir / Transaksi</h1><p>Buat transaksi penjualan dan cetak struk.</p></div><button class="secondary" onclick="clearCart()">Kosongkan Keranjang</button></div>
+      <div class="cashier-grid">
+        <div class="panel">
+          <div class="panel-head"><h3>Pilih Barang</h3></div>
+          <div class="toolbar"><input id="productSearch" placeholder="🔎 Cari nama / kode barang..." oninput="renderProductPicker()"><select id="categoryFilter" onchange="renderProductPicker()"><option value="">Semua kategori</option></select></div>
+          <div id="productPicker" class="product-grid"></div>
+        </div>
+        <div class="panel cart-panel">
+          <div class="panel-head"><h3>Keranjang</h3><span id="cartCount">0 item</span></div>
+          <div id="cartItems" class="cart-items"></div>
+          <div class="summary">
+            <div><span>Subtotal</span><b id="cartSubtotal">Rp 0</b></div>
+            <div><span>Diskon</span><input id="discount" type="number" min="0" value="0" oninput="renderCart()"></div>
+            <div><span>Pajak (%)</span><input id="tax" type="number" min="0" value="0" oninput="renderCart()"></div>
+            <div class="total"><span>Total</span><b id="cartTotal">Rp 0</b></div>
+            <label>Pelanggan <input id="customerName" placeholder="Nama Pelanggan"></label>
+            <label>Metode Pembayaran <select id="paymentMethod"><option>Tunai</option><option>QRIS</option><option>Debit</option><option>Kredit</option><option>Transfer</option></select></label>
+            <label>Bayar <input id="cashPaid" type="number" min="0" placeholder="0" oninput="calculateChange()"></label>
+            <div class="change">Kembalian: <b id="change">Rp 0</b></div>
+            <button class="primary full" onclick="checkout()">💳 Bayar & Simpan Transaksi</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="produk" class="page">
+      <div class="page-head"><div><h1>Data Stok & Barang</h1><p>Kelola produk, harga beli, harga jual, dan persediaan.</p></div><button class="primary" onclick="openProductModal()">＋ Tambah Barang</button></div>
+      <div class="cards mini"><div class="card"><span>Total Produk</span><b id="productCount">0</b></div><div class="card"><span>Total Nilai Stok</span><b id="stockValue">Rp 0</b></div><div class="card"><span>Stok Menipis</span><b id="lowCount">0</b></div></div>
+      <div class="panel"><div class="toolbar"><input id="stockSearch" placeholder="🔎 Cari barang..." oninput="renderProducts()"><select id="stockCategory" onchange="renderProducts()"><option value="">Semua kategori</option></select><button class="secondary" onclick="exportProducts()">⬇ Download Stok Barang</button></div>
+      <div class="table-wrap"><table><thead><tr><th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Stok</th><th>Min.</th><th>Harga Beli</th><th>Harga Jual</th><th>Nilai Stok</th><th>Aksi</th></tr></thead><tbody id="productTable"></tbody></table></div></div>
+    </section>
+
+    <section id="pengeluaran" class="page">
+      <div class="page-head"><div><h1>Pengeluaran</h1><p>Catat biaya operasional toko.</p></div><button class="primary" onclick="openExpenseModal()">＋ Tambah Pengeluaran</button></div>
+      <div class="cards mini"><div class="card"><span>Pengeluaran Bulan Ini</span><b id="monthExpense">Rp 0</b></div><div class="card"><span>Jumlah Catatan</span><b id="expenseCount">0</b></div></div>
+      <div class="panel"><div class="toolbar"><input id="expenseSearch" placeholder="🔎 Cari keterangan..." oninput="renderExpenses()"><select id="expenseMonth" onchange="renderExpenses()"><option value="">Semua bulan</option></select></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan</th><th>Nominal</th><th>Aksi</th></tr></thead><tbody id="expenseTable"></tbody></table></div></div>
+    </section>
+
+    <section id="laporan" class="page">
+      <div class="page-head"><div><h1>Laporan</h1><p>Analisis penjualan, pengeluaran, dan laba.</p></div><button class="secondary" onclick="printReport()">🖨 Cetak Laporan</button></div>
+      <div class="panel"><div class="toolbar"><label>Dari <input type="date" id="reportFrom"></label><label>Sampai <input type="date" id="reportTo"></label><button class="primary" onclick="renderReports()">Tampilkan</button></div></div>
+      <div class="cards"><div class="card"><span>Total Penjualan</span><b id="reportSales">Rp 0</b></div><div class="card"><span>Harga Pokok (HPP)</span><b id="reportHpp">Rp 0</b></div><div class="card"><span>Pengeluaran</span><b id="reportExpense">Rp 0</b></div><div class="card"><span>Laba Bersih</span><b id="reportProfit">Rp 0</b></div></div>
+      <div class="grid-2"><div class="panel"><h3>Produk Terlaris</h3><div class="table-wrap"><table><thead><tr><th>Produk</th><th>Qty</th><th>Penjualan</th></tr></thead><tbody id="bestProducts"></tbody></table></div></div><div class="panel"><h3>Ringkasan Pembayaran</h3><div id="paymentSummary"></div></div></div>
+    </section>
+
+    <section id="struk" class="page">
+      <div class="page-head"><div><h1>Riwayat Struk</h1><p>Lihat, cetak, atau hapus transaksi.</p></div></div>
+      <div class="panel"><div class="toolbar"><input id="receiptSearch" placeholder="🔎 Cari nomor struk / pelanggan..." oninput="renderReceipts()"><button class="danger-outline" onclick="clearAllSales()">Hapus Semua Transaksi</button></div>
+      <div class="table-wrap"><table><thead><tr><th>No. Struk</th><th>Tanggal</th><th>Pelanggan</th><th>Pembayaran</th><th>Total</th><th>Aksi</th></tr></thead><tbody id="receiptTable"></tbody></table></div></div>
+    </section>
+
+    <section id="pengaturan" class="page">
+      <div class="page-head"><div><h1>Pengaturan Toko</h1><p>Identitas toko dan pengelolaan data.</p></div></div>
+      <div class="panel settings"><h3>Identitas Toko</h3><label>Nama Toko<input id="setStoreName"></label><label>Alamat<input id="setAddress"></label><label>No. Telepon<input id="setPhone"></label><label>Footer Struk<input id="setFooter"></label><button class="primary" onclick="saveSettings()">Simpan Pengaturan</button></div>
+      <div class="panel settings"><h3>Backup & Data</h3><p>Cadangkan data ke file JSON agar bisa dipindahkan ke komputer lain.</p><button class="secondary" onclick="backupData()">⬇ Backup Data JSON</button> <label class="file-label">⬆ Import Data JSON<input type="file" accept=".json" onchange="importData(event)"></label><button class="danger" onclick="resetData()">Reset Semua Data</button></div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal"><div class="modal-box"><button class="close" onclick="closeModal()">×</button><div id="modalContent"></div></div></div>
+  <div id="toast" class="toast"></div>
+  <script src="script.js"></script>
+</body>
+</html>
